@@ -1,2 +1,2 @@
 # epimap
-EpiMap is an early warning system that tracks and maps emerging diseases in real time, enabling rapid response and informed decision-making.
+EpiMap is an early warning system for emerging diseases that combines real-time data analysis with interactive mapping. It tracks outbreaks, monitors disease spread, and provides alerts to help governments, health organizations, and the public respond proactively. By leveraging AI and geospatial technology, EpiMap enhances epidemic surveillance and decision-making, aiming to minimize the impact of health crises.
