@@ -75,14 +75,7 @@ del options_dataframe
 @st.cache_data(ttl=3600)  # Caché de 1 hora
 def get_api_data(endpoint):
     """Obtiene datos de la API especificada"""
-    try:
-        base_url = "https://epimap-api.example.com/api/v1"
-        response = requests.get(f"{base_url}/{endpoint}")
-        response.raise_for_status()
-        return response.json()
-    except requests.exceptions.RequestException as e:
-        st.error(f"Error al obtener datos de la API: {e}")
-        return get_sample_data(endpoint)
+    return get_sample_data(endpoint)
 
 def get_data(data_type):
     """Obtiene datos de la API especificada"""
@@ -476,16 +469,23 @@ with col2:
     st.plotly_chart(fig, use_container_width=True)
     
     # Eliminar la línea problemática con age_counts
-    # age_counts =
+    # age_counts:pd.DataFrame = get_data(3)
+    age_counts = pd.DataFrame({
+        "age": ["0-4", "5-14", "15-24", "35-45", "45-54", "55-64", "65-74", "75-84", "85-94", "95+"],
+        "probability": [0.03, 0.01, 0.02, 0.04, 0.07, 0.12, 0.18, 0.25, 0.35, 0.50]
+    })
     
-    severity_counts = filtered_df["severity"].value_counts()
     age_fig = px.bar(
-        x=age_counts.index,
-        y=age_counts.values,
+        x=age_counts["age"],
+        y=age_counts["probability"],
         labels={"x": "Edad", "y": "Probabilidad de muerte"},
-        color=age_counts.values,
+        color=age_counts["probability"],
         color_continuous_scale="Turbo"
     )
+    age_fig.update_layout(height=300)
+    st.plotly_chart(age_fig, use_container_width=True)
+    
+    severity_counts = filtered_df["severity"].value_counts()
     fig_pie = px.pie(
         values=severity_counts.values,
         names=severity_counts.index,

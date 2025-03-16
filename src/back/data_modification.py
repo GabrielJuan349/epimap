@@ -18,8 +18,13 @@ def modify_dataset_country(data, mode=True):
     else:
         new_data = pd.DataFrame()
         for i in data:
-            i[1]= country_codes.loc[country_codes.iloc[:, 0] == i[1], country_codes.columns[1]]
-            new_data = new_data.append(i)
+            # Create a copy of i as a list to modify
+            row = list(i)
+            # Look up the country name
+            result = country_codes.loc[country_codes.iloc[:, 0] == row[1], country_codes.columns[1]]
+            if not result.empty:
+                row[1] = result.iloc[0]
+            new_data = pd.concat([new_data, pd.DataFrame([row])], ignore_index=True)
         return new_data
     
 def modify_dataset_epi(data:pd.DataFrame):
