@@ -27,7 +27,7 @@ async def hello_world():
     return {"message": "¡Hola desde EpiMap API!"}
 
 # Endpoint POST
-@app.get("/notifications")
+@app.post("/notifications")
 async def process_data(item: Item):
     """Endpoint que procesa datos recibidos en formato JSON"""
     result = {
@@ -37,11 +37,32 @@ async def process_data(item: Item):
     }
     return result
 
-@app.get("/map_data")
-async def get_map_data(Dict:dict):
-    return {"message": "Mapa de la API"}
+# map data endpoint
+@app.post("/map_data")
+async def process_data(item: Item):
+    """Endpoint que procesa datos recibidos en formato JSON"""
+    result = {
+        "processed_name": item.name.upper(),
+        "processed_value": item.value * 2,
+        "status": "success"
+    }
+    return result
 
+# Age data endpoint
+@app.post("/age_data")
+async def age_data(item: Item):
+    """Endpoint que procesa datos recibidos en formato JSON"""
+    result = {
+        "processed_name": item.name.upper(),
+        "processed_value": item.value * 2,
+        "status": "success"
+    }
+    return result
 
+# Top 5 illnes endpoint
+@app.post("/top5_illness")
+async def illness_data():
+    
 
 # Para ejecutar la aplicación directamente
 if __name__ == "__main__":
