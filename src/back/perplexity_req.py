@@ -15,8 +15,10 @@ class PerplexityAPI:
         self.system_role = {
             "role": "system",
             "content": (
-                "You are an alert notification system and must provide responses with "
-                "the following structure: '[Risk]. [Illness] in [Country]. [Current date]'"
+                "You are an alert notification system that, given a json with information of "
+                "diseases in every country, you must classify them in different levels of alert "
+                "from 0 to 5 and send a response with this structure: "
+                "'[Risk level]: [Disease] in [Country]. [Current date]'"
             )
         }
     
@@ -35,3 +37,4 @@ class PerplexityAPI:
             messages=message,
         )
         return response
+
