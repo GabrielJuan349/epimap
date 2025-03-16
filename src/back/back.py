@@ -2,6 +2,10 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import uvicorn
+import data_modification as dm
+import perplexity_req as pr
+import src.models.train_model as tm
+import json
 
 # Creamos la aplicación FastAPI
 app = FastAPI(title="EpiMap API")
@@ -19,6 +23,9 @@ app.add_middleware(
 class Item(BaseModel):
     name: str
     value: float
+
+class ill_data(BaseModel):
+    countries: list
 
 # Endpoint GET
 @app.get("/api/hello")
@@ -61,8 +68,17 @@ async def age_data(item: Item):
 
 # Top 5 illnes endpoint
 @app.post("/top5_illness")
-async def illness_data():
+async def illness_data(countries: list):
+    """"Endpoint that sends the top 5 illness from the result of the model"""
+    data = tm.
+    data = dm.modify_dataset_country(data,False)
+    data = dm.modify_dataset_epi(data)
+    # Filter data to only include countries from the input list
+    data = data[data['country'].isin(countries)]
     
+    # Prepare the result to return
+    result = data.to_dict(orient='records')
+    return result
 
 # Para ejecutar la aplicación directamente
 if __name__ == "__main__":

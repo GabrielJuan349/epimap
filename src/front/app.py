@@ -84,7 +84,7 @@ def get_api_data(endpoint):
         st.error(f"Error al obtener datos de la API: {e}")
         return get_sample_data(endpoint)
 
-def get_map_data(data_type):
+def get_data(data_type):
     """Obtiene datos de la API especificada"""
     endpoints = {
         1 : "map_data",
@@ -96,10 +96,14 @@ def get_map_data(data_type):
         base_url = "https://localhost:8000/"
         response = requests.get(f"{base_url}/{endpoints[data_type]}")
         response.raise_for_status()
-        return response.json()
+        return transform_data(response.json())
     except requests.exceptions.RequestException as e:
         st.error(f"Error al obtener datos de la API: {e}")
         # return get_sample_data(endpoint)
+
+def transform_data(data):
+    """"Transforma los datos de un json a un DataFrame"""
+    return pd.read_json(data)
     
 # Función para obtener datos de muestra
 def get_sample_data(endpoint):
