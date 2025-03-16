@@ -1,5 +1,6 @@
 import argparse
 import pandas as pd
+import time
 
 from model import MortalityPredictionModel, evaluate_model, visualize_results, get_prediction_by_ids, get_prediction
 
@@ -36,20 +37,23 @@ if __name__ == "__main__":
 
     # Visualize results
     # visualize_results(results, model_name=model_name)
+    start = time.time()
+    preds = get_prediction(data, age_columns)
+    print(f"Elapsed time {time.time() - start}")
+    print("-"*50)
 
-    preds = get_prediction(1125, data, age_columns)
-
-    # Filter for disease ID 1091
-    disease_prediction = preds[preds['Disease_ID'] == 1091]
+    # Filter for Country 5198 and Disease ID 1092
+    disease_prediction = preds[(preds['Country'] == 5198) & (preds['Cause_Code'] == 1094)]
 
     # Extract the prediction for the specific age range
     if not disease_prediction.empty:
-        prediction_value = disease_prediction['Deaths23-24_predicted'].values[0]
-        actual_value = disease_prediction['Deaths23-24_actual'].values[0]
-        
-        print(f"Country ID: 1125, Disease ID: 1091, Age Range: Deaths23-24")
+        prediction_value = disease_prediction['Deaths2-6_predicted'].values[0]
+        # Assuming the original column is just called 'Deaths17-18' without '_actual' suffix
+        actual_value = disease_prediction['Deaths2-6'].values[0]
+        print(f"Country ID: 5198, Disease ID: 1092, Age Range: Deaths2-6")
         print(f"Predicted: {prediction_value:.4f}")
         print(f"Actual: {actual_value:.4f}")
     else:
-        print(f"No data found for Disease ID 1091 in Country 1125")
+        print(f"No data found for Disease ID 1092 in Country 5198")
+
 

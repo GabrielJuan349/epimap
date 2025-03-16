@@ -347,96 +347,39 @@ def get_prediction_by_ids(results, country_id, disease_id):
         "actual": f"{actual:.2f}%"
     }
 
-def get_prediction(country_id: int, data: pd.DataFrame, age_columns: list) -> pd.DataFrame:
-    """Get a prediction given a country for all diseases across all age ranges.
-    
-    Args:
-        country_id (int): Country code to query.
-        
-    Returns:
-        pd.DataFrame: DataFrame containing predictions for all diseases and age ranges
+def get_prediction(data: pd.DataFrame, age_columns: list) -> pd.DataFrame:
     """
-    # Initialize results dictionary to store predictions
-    predictions_by_age = {}
+    Predict mortality for each age range in age_columns.
+
+
+    pandas.DataFrame
+        DataFrame containing the predicted mortality for each age range
+    """
+    # Create a copy of data to avoid modifying the original
+    result_df = data.copy()
     
-    # Get all diseases for this country from the test data
-    country_mask = data['Country'] == country_id
+    # Create a dictionary to store predictions for each age range
+    predictions = {}
     
-    if not country_mask.any():
-        return pd.DataFrame({"error": f"No data found for country ID {country_id}"}, index=[0])
-    
-    # Get all disease IDs for this country
-    disease_ids = data[country_mask]['Cause_Code'].unique()
-    
-    # For each age range, train a model and get predictions
-    for age_col in age_columns:
-        # Create a model for this specific age range as target
-        age_model = MortalityPredictionModel(age_columns=age_columns, target_column=age_col)
+    # For each age column, train a model and make predictions
+    for target_column in age_columns:
+        # Create a model for this age range
+        model = MortalityPredictionModel(
+            age_columns=[col for col in age_columns if col != target_column],
+            target_column=target_column
+        )
         
-        # Train the model for this age range
-        age_results = age_model.train(data, min_year=2000, max_year=2020)
+        # Train the model (using last year as test)
+        min_year = data['Year'].min()
+        max_year = data['Year'].max()
+        results = model.train(data, min_year=min_year, max_year=max_year)
         
-        # Extract test data for this model
-        age_X_test = age_results['X_test']
-        age_y_pred = age_results['y_pred_test']
-        age_y_test = age_results['y_test']
-        
-        # Create a dictionary to store predictions for this age range
-        age_predictions = {}
-        
-        # Get predictions for each disease for this country
-        for disease_id in disease_ids:
-            # Find matching rows for this country and disease
-            mask = (age_X_test['Country'] == country_id) & (age_X_test['Cause_Code'] == disease_id)
-            
-            if not mask.any():
-                # Skip if no data found for this combination
-                continue
-            
-            # Get the first matching index
-            idx = mask.idxmax()
-            loc_idx = age_X_test.index.get_loc(idx)
-            
-            # Get prediction and actual value
-            prediction = age_y_pred[loc_idx] 
-            actual = age_y_test.iloc[loc_idx]
-            
-            # Store in the dictionary
-            age_predictions[disease_id] = {
-                'predicted': prediction,
-                'actual': actual
-            }
-        
-        # Store predictions for this age range
-        predictions_by_age[age_col] = age_predictions
+        # Generate predictions for the entire dataset
+        X_predict = data[results['features']]
+        predictions[target_column] = model.model.predict(X_predict)
     
-    # Create a DataFrame with all results
-    rows = []
+    # Add predictions to the result DataFrame
+    for column, preds in predictions.items():
+        result_df[f'{column}_predicted'] = np.maximum(preds * 100, 0)
     
-    for disease_id in disease_ids:
-        row = {
-            'Country': country_id,
-            'Disease_ID': disease_id,
-        }
-        
-        # Add predictions for each age range
-        for age_col in age_columns:
-            if disease_id in predictions_by_age[age_col]:
-                # Get prediction and actual values
-                predicted = predictions_by_age[age_col][disease_id]['predicted']
-                actual = predictions_by_age[age_col][disease_id]['actual']
-                
-                # Set negative values to 0
-                predicted = max(0, predicted)
-                actual = max(0, actual)
-                
-                row[f'{age_col}_predicted'] = predicted
-                row[f'{age_col}_actual'] = actual
-            else:
-                row[f'{age_col}_predicted'] = 0
-                row[f'{age_col}_actual'] = 0
-        rows.append(row)
-    
-    # Convert to DataFrame
-    result_df = pd.DataFrame(rows)
     return result_df
