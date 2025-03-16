@@ -26,6 +26,20 @@ def modify_dataset_epi(data:pd.DataFrame):
     epi_path = os.path.join(project_root, 'data', 'epi_codes.csv')
     epi_codes = pd.read_csv(epi_path)
     del epi_path
-
     
+    # Crear una copia del DataFrame de entrada para no modificar el original
+    modified_data = data.copy()
+    
+    # Crear un diccionario de mapeo desde el código (columna 0) al valor de la columna 1
+    code_to_detail = dict(zip(epi_codes.iloc[:, 0], epi_codes.iloc[:, 1]))
+    
+    # Reemplazar los valores en la columna 2 del DataFrame de entrada
+    # con los valores correspondientes de la columna 1 de epi_codes
+    modified_data.iloc[:, 2] = modified_data.iloc[:, 2].map(code_to_detail)
+    
+    return modified_data
+
+
+
+
 
